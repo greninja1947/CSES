@@ -272,10 +272,71 @@ int expo (int a, int b){
     return x;
 }
 
+struct Node {
+    int next[26];
+    char end;
+
+    Node(){
+        memset(next,-1,sizeof(next));
+        end = 0;
+    }
+};
+
+vector<Node> trieVec(1);
+
+void insert(string word){
+    int curr = 0;
+    for(char c:word){
+        int to = c - 'a';
+        if(trieVec[curr].next[to]==-1){
+            Node newnode;
+            trieVec.push_back(newnode);
+            trieVec[curr].next[to]=trieVec.size()-1;
+        }
+        curr = trieVec[curr].next[to];
+    }
+    trieVec[curr].end = 1;
+
+}
+
 void solve(){
-    
+    string s;
+    cin>>s;
+    s = '*' + s;
+    int k;cin>>k;
+    while(k--){
+        string x;cin>>x;
+        insert(x);
+    }
+    int n = s.size();
+    vector<int>dp(n+1,0);
+    dp[0]=1;
+    for(int i = 0;i<n-1;i++){
+        int curr = 0;
+        for(int j = i+1;j<n;j++){
+            int to = s[j]-'a';
+            if(trieVec[curr].next[to]==-1)break;
+            curr = trieVec[curr].next[to];
+
+            if(trieVec[curr].end){
+                dp[j] = (dp[i] + dp[j])%mod;
+            }
+        }
+    }
+    cout<<dp[n-1]<<endl;
+
 }
 int32_t main() {
     FASTIO
     solve();
 }
+/*
+    Intution: 
+
+    We use tries to solve this, we construct a dp array where dp[i] means 
+    in how many ways can we make the substring s[0..i] thus our answer becomes dp[n-1]. 
+    The main logic is to store the dictionary of words in a trie, then do a bottom up construction 
+    of the dp array, when dp array is filled till level i, we traverse each substring from i to 
+    end of the word, and if the substring s[i..j] is in the dictionary we add dp[i] in dp[j], and if
+    a substring is not in trie, we break the loop, as no other substring starting from i can be in the dictionary.
+*/
